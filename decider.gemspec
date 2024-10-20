@@ -3,6 +3,8 @@
 require_relative "lib/decider/version"
 
 Gem::Specification.new do |spec|
+  github_uri = "https://github.com/jandudulski/decide.rb"
+
   spec.name = "decide.rb"
   spec.version = Decider::VERSION
   spec.authors = ["Jan Dudulski"]
@@ -10,13 +12,12 @@ Gem::Specification.new do |spec|
 
   spec.summary = "Functional Event Sourcing Decider in Ruby"
   spec.description = "Functional Event Sourcing Decider in Ruby"
-  spec.homepage = "https://github.com/jandudulski/decider.rb"
+  spec.homepage = github_uri
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.0.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"
 
-  github_uri = "https://github.com/jandudulski/decider.rb"
   spec.metadata["bug_tracker_uri"] = "#{github_uri}/issues"
   spec.metadata["changelog_uri"] = "#{github_uri}/CHANGELOG.md"
   spec.metadata["documentation_uri"] = github_uri

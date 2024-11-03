@@ -5,7 +5,7 @@ module Decider
   StateNotDefined = Class.new(StandardError)
 
   class Module < ::Module
-    def initialize(initial_state_args:, deciders:, evolvers:)
+    def initialize(initial_state_args:, deciders:, evolvers:, terminal:)
       define_method(:initial_state) do
         new(**initial_state_args)
       end
@@ -25,6 +25,10 @@ module Decider
 
         handler.call(state, event)
       end
+
+      define_method(:terminal?) do |state|
+        terminal.call(state)
+      end
     end
   end
 
@@ -37,6 +41,7 @@ module Decider
       @state = DEFAULT
       @deciders = {}
       @evolvers = {}
+      @terminal = ->(_state) { false }
     end
 
     def build(&block)
@@ -47,7 +52,8 @@ module Decider
       @module = Module.new(
         initial_state_args: initial_state_args,
         deciders: deciders,
-        evolvers: evolvers
+        evolvers: evolvers,
+        terminal: terminal
       )
 
       @state.extend(@module)
@@ -57,7 +63,7 @@ module Decider
 
     private
 
-    attr_reader :initial_state_args, :deciders, :evolvers
+    attr_reader :initial_state_args, :deciders, :evolvers, :terminal
 
     def state(**kwargs, &block)
       raise StateAlreadyDefined if @state != DEFAULT
@@ -72,6 +78,10 @@ module Decider
 
     def evolve(event, &block)
       evolvers[event] = block
+    end
+
+    def terminal?(&block)
+      @terminal = block
     end
   end
   private_constant :Builder

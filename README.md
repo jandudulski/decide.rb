@@ -19,7 +19,7 @@ gem "decide.rb"
 ## Usage
 
 ```ruby
-require "decide.rb"
+require "decider"
 
 module Commands
   Increase = Data.define
@@ -31,10 +31,10 @@ module Events
   ValueDecreased = Data.define
 end
 
-ValueDecider = Decider.define do
-  MIN = 0
-  MAX = 100
+MIN = 0
+MAX = 100
 
+ValueDecider = Decider.define do
   # define intial state
   state value: 0 do
     # you can define custom methods on state
@@ -74,6 +74,10 @@ ValueDecider = Decider.define do
   evolve Events::ValueDecreased do |state, event|
     # state is immutable Data object
     state.with(value: state.value - 1)
+  end
+
+  terminal? do |state|
+    state <= 0
   end
 end
 

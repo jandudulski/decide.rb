@@ -131,4 +131,34 @@ class TestDecider < Minitest::Spec
       )
     end
   end
+
+  describe "terminal?" do
+    it "returns false when not defined" do
+      decider = Decider.define do
+        state init: 0
+      end
+
+      refute(
+        decider.terminal?(decider.initial_state)
+      )
+    end
+
+    it "returns true for terminated state" do
+      decider = Decider.define do
+        state value: 100
+
+        terminal? do |state|
+          state.value <= 0
+        end
+      end
+
+      refute(
+        decider.terminal?(decider.initial_state)
+      )
+
+      assert(
+        decider.terminal?(decider.new(value: 0))
+      )
+    end
+  end
 end

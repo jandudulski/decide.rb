@@ -1,3 +1,15 @@
 module Decider
   VERSION: String
+
+  interface _Decider[C, S, E]
+    def decide: (C, S) -> Array[E]
+
+    def evolve: (S, E) -> S
+
+    def initial_state: () -> S
+
+    def terminal?: (S) -> bool
+  end
+
+  def self.define: [C, S, E] () -> _Decider[C, S, E]
 end

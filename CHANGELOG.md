@@ -1,4 +1,4 @@
-# Unreleased
+# 0.2.0
 
 * Added `terminal?` function
 * `Decider.compose(left, right)`

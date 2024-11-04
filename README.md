@@ -86,6 +86,53 @@ events = ValueDecider.decide(Commands::Increase.new, state)
 new_state = events.reduce(state) { |state, event| ValueDecider.evolve(state, events)
 ```
 
+You can also compose deciders:
+
+```ruby
+left = Decider.define do
+  state value: 0
+
+  decide Commands::LeftCommand do |command, state|
+    [Events::LeftEvent.new(value: command.value)]
+  end
+
+  evolve Events::LeftEvent do |state, event|
+    state.with(value: state.value + 1)
+  end
+
+  terminal? do |state|
+    state <= 0
+  end
+end
+
+right = Decider.define do
+  state value: 0
+
+  decide Commands::RightCommand do |command, state|
+    [Events::RightEvent.new(value: command.value)]
+  end
+
+  evolve Events::RightEvent do |state, event|
+    state.with(value: state.value + 1)
+  end
+
+  terminal? do |state|
+    state <= 0
+  end
+end
+
+Composition = Decider.compose(left, right)
+
+state = Composition.initial_state
+#> #<data left=#<data value=0>, right=#<data value=0>>
+
+events = Composition.decide(Commands::LeftCommand.new(value: 1), state)
+#> [#<data value=1>]
+
+state = events.reduce(state, &Composition.method(:evolve))
+#> #<data left=#<data value=1>, right=#<data value=0>>
+```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

@@ -11,5 +11,6 @@ module Decider
     def terminal?: (S) -> bool
   end
 
+  def self.compose: [C1, S1, E1, C2, S2, E2] (_Decider[C1, S1, E1], _Decider[C2, S2, E2]) -> _Decider[C1 | C2, S1 & S2, E1 | E2]
   def self.define: [C, S, E] () -> _Decider[C, S, E]
 end

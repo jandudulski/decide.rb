@@ -10,6 +10,14 @@ module Decider
         new(**initial_state_args)
       end
 
+      define_method(:commands) do
+        deciders.keys
+      end
+
+      define_method(:events) do
+        evolvers.keys
+      end
+
       define_method(:decide) do |command, state|
         handler = deciders.fetch(command.class) {
           raise ArgumentError, "Unknown command: #{command.class}"
@@ -89,5 +97,43 @@ module Decider
   def self.define(&block)
     builder = Builder.new
     builder.build(&block)
+  end
+
+  def self.compose(left, right)
+    define do
+      state left: left.initial_state, right: right.initial_state
+
+      left.commands.each do |klass|
+        decide klass do |command, state|
+          left.decide(command, state.left)
+        end
+      end
+
+      right.commands.each do |klass|
+        decide klass do |command, state|
+          right.decide(command, state.right)
+        end
+      end
+
+      left.events.each do |klass|
+        evolve klass do |state, event|
+          state.with(
+            left: left.evolve(state.left, event)
+          )
+        end
+      end
+
+      right.events.each do |klass|
+        evolve klass do |state, event|
+          state.with(
+            right: right.evolve(state.right, event)
+          )
+        end
+      end
+
+      terminal? do |state|
+        left.terminal?(state.left) && right.terminal?(state.right)
+      end
+    end
   end
 end

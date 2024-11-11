@@ -4,6 +4,30 @@ module Decider
   StateAlreadyDefined = Class.new(StandardError)
   StateNotDefined = Class.new(StandardError)
 
+  class Composition < Array
+    BLANK = Object.new
+    private_constant :BLANK
+
+    def initialize(left, right)
+      super([left, right]).freeze
+    end
+
+    def with(left: BLANK, right: BLANK)
+      Composition.new(
+        (left == BLANK) ? self.left : left,
+        (right == BLANK) ? self.right : right
+      )
+    end
+
+    def left
+      self[0]
+    end
+
+    def right
+      self[1]
+    end
+  end
+
   class Module < ::Module
     def initialize(initial_state:, deciders:, evolvers:, terminal:)
       define_method(:initial_state) do
@@ -102,7 +126,7 @@ module Decider
 
   def self.compose(left, right)
     define do
-      initial_state Data.define(:left, :right).new(left: left.initial_state, right: right.initial_state)
+      initial_state Composition.new(left.initial_state, right.initial_state)
 
       left.commands.each do |klass|
         decide klass do |command, state|

@@ -3,7 +3,6 @@
 require "test_helper"
 
 class TestCompose < Minitest::Spec
-  Tuple = Data.define(:left, :right)
   Left = Data.define(:value)
   Right = Data.define(:value)
 
@@ -20,11 +19,8 @@ class TestCompose < Minitest::Spec
       composition = Decider.compose(left, right)
 
       assert_equal(
-        Tuple.new(
-          left: left.initial_state,
-          right: right.initial_state
-        ).to_h,
-        composition.initial_state.to_h
+        [left.initial_state, right.initial_state],
+        composition.initial_state
       )
     end
   end
@@ -187,11 +183,11 @@ class TestCompose < Minitest::Spec
       ].reduce(composition.initial_state, &composition.method(:evolve))
 
       assert_equal(
-        Tuple.new(
-          left: Left.new(value: 1),
-          right: Right.new(value: 2)
-        ).to_h,
-        state.to_h
+        [
+          Left.new(value: 1),
+          Right.new(value: 2)
+        ],
+        state
       )
     end
   end

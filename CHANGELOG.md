@@ -2,6 +2,7 @@
 
 * Rename `Decider.state` to `Decider.initial_state`
 * Allow to use anything as state
+* Use tuple-like array for composition
 
 # 0.2.0
 

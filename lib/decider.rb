@@ -29,7 +29,7 @@ module Decider
   end
 
   class Module < ::Module
-    def initialize(initial_state:, deciders:, evolvers:, terminal:)
+    def initialize(initial_state:, deciders:, evolutions:, terminal:)
       define_method(:initial_state) do
         initial_state
       end
@@ -39,39 +39,43 @@ module Decider
       end
 
       define_method(:events) do
-        evolvers.keys
+        evolutions.keys
       end
 
       define_method(:decide!) do |command, state|
-        handler = deciders.fetch(command.class) {
-          raise ArgumentError, "Unknown command: #{command.class}"
-        }
-
-        handler.call(command, state)
+        case deciders.find { |key, _| key === command }
+        in [_, handler]
+          handler.call(command, state)
+        else
+          raise ArgumentError, "Unknown command: #{command.inspect}"
+        end
       end
 
       define_method(:decide) do |command, state|
-        handler = deciders.fetch(command.class) {
-          return []
-        }
-
-        handler.call(command, state)
+        case deciders.find { |key, _| key === command }
+        in [_, handler]
+          handler.call(command, state)
+        else
+          []
+        end
       end
 
       define_method(:evolve!) do |state, event|
-        handler = evolvers.fetch(event.class) {
-          raise ArgumentError, "Unknown event: #{event.class}"
-        }
-
-        handler.call(state, event)
+        case evolutions.find { |key, _| key === event }
+        in [_, handler]
+          handler.call(state, event)
+        else
+          raise ArgumentError, "Unknown event: #{event.inspect}"
+        end
       end
 
       define_method(:evolve) do |state, event|
-        handler = evolvers.fetch(event.class) {
-          return state
-        }
-
-        handler.call(state, event)
+        case evolutions.find { |key, _| key === event }
+        in [_, handler]
+          handler.call(state, event)
+        else
+          state
+        end
       end
 
       define_method(:terminal?) do |state|
@@ -88,7 +92,7 @@ module Decider
     def initialize
       @initial_state = DEFAULT
       @deciders = {}
-      @evolvers = {}
+      @evolutions = {}
       @terminal = ->(_state) { false }
     end
 
@@ -102,7 +106,7 @@ module Decider
       @module = Module.new(
         initial_state: @initial_state,
         deciders: deciders,
-        evolvers: evolvers,
+        evolutions: evolutions,
         terminal: terminal
       )
 
@@ -113,7 +117,7 @@ module Decider
 
     private
 
-    attr_reader :deciders, :evolvers, :terminal
+    attr_reader :deciders, :evolutions, :terminal
 
     def initial_state(state)
       raise StateAlreadyDefined if @initial_state != DEFAULT
@@ -126,7 +130,7 @@ module Decider
     end
 
     def evolve(event, &block)
-      evolvers[event] = block
+      evolutions[event] = block
     end
 
     def terminal?(&block)

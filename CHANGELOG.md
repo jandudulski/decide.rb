@@ -1,3 +1,7 @@
+# Unreleased
+
+* Accept more data structures for commands and events
+
 # 0.3.0
 
 * Rename `Decider.state` to `Decider.initial_state`

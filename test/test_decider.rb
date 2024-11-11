@@ -78,9 +78,43 @@ class TestDecider < Minitest::Spec
         decider.decide(Decrease.new(value: 2), decider.initial_state)
       )
     end
+
+    it "accepts primitive commands" do
+      decider = Decider.define do
+        initial_state State.new(value: 0)
+
+        decide :increase do |_command, state|
+          [
+            ValueChanged.new(value: state.value + 1)
+          ]
+        end
+      end
+
+      assert_equal(
+        [ValueChanged.new(value: 1)],
+        decider.decide(:increase, decider.initial_state)
+      )
+    end
   end
 
   describe "#decide!" do
+    it "accepts primitive commands" do
+      decider = Decider.define do
+        initial_state State.new(value: 0)
+
+        decide :increase do |_command, state|
+          [
+            ValueChanged.new(value: state.value + 1)
+          ]
+        end
+      end
+
+      assert_equal(
+        [ValueChanged.new(value: 1)],
+        decider.decide!(:increase, decider.initial_state)
+      )
+    end
+
     it "raises when command not defined" do
       decider = Decider.define do
         initial_state State.new(value: 0)
@@ -137,9 +171,57 @@ class TestDecider < Minitest::Spec
         decider.evolve(decider.initial_state, ValueDecreased.new(value: 2))
       )
     end
+
+    it "can evolve with primitives" do
+      decider = Decider.define do
+        initial_state State.new(value: 5)
+
+        evolve :increased do |state, event|
+          state.with(value: state.value + 1)
+        end
+
+        evolve :decreased do |state, event|
+          state.with(value: state.value - 1)
+        end
+      end
+
+      assert_equal(
+        State.new(value: 6),
+        decider.evolve(decider.initial_state, :increased)
+      )
+
+      assert_equal(
+        State.new(value: 4),
+        decider.evolve(decider.initial_state, :decreased)
+      )
+    end
   end
 
   describe "#evolve!" do
+    it "can evolve with primitives" do
+      decider = Decider.define do
+        initial_state State.new(value: 5)
+
+        evolve :increased do |state, event|
+          state.with(value: state.value + 1)
+        end
+
+        evolve :decreased do |state, event|
+          state.with(value: state.value - 1)
+        end
+      end
+
+      assert_equal(
+        State.new(value: 6),
+        decider.evolve!(decider.initial_state, :increased)
+      )
+
+      assert_equal(
+        State.new(value: 4),
+        decider.evolve!(decider.initial_state, :decreased)
+      )
+    end
+
     it "raises when event not defined" do
       decider = Decider.define do
         initial_state State.new(value: 0)

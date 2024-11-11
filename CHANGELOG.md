@@ -1,4 +1,4 @@
-# Unreleased
+# 0.3.0
 
 * Rename `Decider.state` to `Decider.initial_state`
 * Allow to use anything as state

@@ -1,3 +1,8 @@
+# Unreleased
+
+* Rename `Decider.state` to `Decider.initial_state`
+* Allow to use anything as state
+
 # 0.2.0
 
 * Added `terminal?` function

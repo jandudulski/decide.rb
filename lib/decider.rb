@@ -5,9 +5,9 @@ module Decider
   StateNotDefined = Class.new(StandardError)
 
   class Module < ::Module
-    def initialize(initial_state_args:, deciders:, evolvers:, terminal:)
+    def initialize(initial_state:, deciders:, evolvers:, terminal:)
       define_method(:initial_state) do
-        new(**initial_state_args)
+        initial_state
       end
 
       define_method(:commands) do
@@ -46,7 +46,7 @@ module Decider
     attr_reader :module
 
     def initialize
-      @state = DEFAULT
+      @initial_state = DEFAULT
       @deciders = {}
       @evolvers = {}
       @terminal = ->(_state) { false }
@@ -55,29 +55,30 @@ module Decider
     def build(&block)
       instance_exec(&block) if block_given?
 
-      raise StateNotDefined if @state == DEFAULT
+      raise StateNotDefined if @initial_state == DEFAULT
+
+      decider = Object.new
 
       @module = Module.new(
-        initial_state_args: initial_state_args,
+        initial_state: @initial_state,
         deciders: deciders,
         evolvers: evolvers,
         terminal: terminal
       )
 
-      @state.extend(@module)
+      decider.extend(@module)
 
-      @state
+      decider
     end
 
     private
 
-    attr_reader :initial_state_args, :deciders, :evolvers, :terminal
+    attr_reader :deciders, :evolvers, :terminal
 
-    def state(**kwargs, &block)
-      raise StateAlreadyDefined if @state != DEFAULT
+    def initial_state(state)
+      raise StateAlreadyDefined if @initial_state != DEFAULT
 
-      @state = Data.define(*kwargs.keys, &block)
-      @initial_state_args = kwargs
+      @initial_state = state
     end
 
     def decide(command, &block)
@@ -101,7 +102,7 @@ module Decider
 
   def self.compose(left, right)
     define do
-      state left: left.initial_state, right: right.initial_state
+      initial_state Data.define(:left, :right).new(left: left.initial_state, right: right.initial_state)
 
       left.commands.each do |klass|
         decide klass do |command, state|

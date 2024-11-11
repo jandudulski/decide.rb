@@ -3,55 +3,42 @@
 require "test_helper"
 
 class TestDecider < Minitest::Spec
+  State = Data.define(:value)
   Increase = Data.define(:value)
   Decrease = Data.define(:value)
   ValueChanged = Data.define(:value)
   ValueIncreased = Data.define(:value)
   ValueDecreased = Data.define(:value)
 
-  describe ".define" do
-    it "raises if state not defined" do
+  describe ".initial_state" do
+    it "raises if initial state not defined" do
       assert_raises(Decider::StateNotDefined) do
         Decider.define
       end
     end
 
-    it "raises if state already defined" do
+    it "raises if initial state already defined" do
       assert_raises(Decider::StateAlreadyDefined) do
         Decider.define do
-          state value: 1
-          state value: 2
+          initial_state State.new(value: 1)
+          initial_state State.new(value: 2)
         end
       end
     end
-  end
 
-  describe "state" do
-    it "creates a state data structure and initial state" do
+    it "stores initial state" do
       decider = Decider.define do
-        state key: "value"
+        initial_state State.new(value: "value")
       end
 
-      assert_equal decider.initial_state, decider.new(key: "value")
-    end
-
-    it "creates a state with custom methods" do
-      decider = Decider.define do
-        state enabled: true do
-          def enabled?
-            enabled
-          end
-        end
-      end
-
-      assert decider.initial_state.enabled?
+      assert_equal decider.initial_state, State.new(value: "value")
     end
   end
 
-  describe "decide" do
+  describe "#decide" do
     it "raises when command not defined" do
       decider = Decider.define do
-        state init: 0
+        initial_state State.new(value: 0)
 
         decide Increase do |_command, _state|
           []
@@ -65,7 +52,7 @@ class TestDecider < Minitest::Spec
 
     it "executes a defined command" do
       decider = Decider.define do
-        state value: 5
+        initial_state State.new(value: 5)
 
         decide Increase do |command, state|
           [
@@ -92,10 +79,10 @@ class TestDecider < Minitest::Spec
     end
   end
 
-  describe "evolve" do
+  describe "#evolve" do
     it "raises when event not defined" do
       decider = Decider.define do
-        state init: 0
+        initial_state State.new(value: 0)
 
         evolve ValueIncreased do |state, event|
           state.with(value: state.value + event.value)
@@ -109,7 +96,7 @@ class TestDecider < Minitest::Spec
 
     it "evolves a defined event" do
       decider = Decider.define do
-        state value: 5
+        initial_state State.new(value: 5)
 
         evolve ValueIncreased do |state, event|
           state.with(value: state.value + event.value)
@@ -121,21 +108,21 @@ class TestDecider < Minitest::Spec
       end
 
       assert_equal(
-        decider.new(value: 7),
+        State.new(value: 7),
         decider.evolve(decider.initial_state, ValueIncreased.new(value: 2))
       )
 
       assert_equal(
-        decider.new(value: 3),
+        State.new(value: 3),
         decider.evolve(decider.initial_state, ValueDecreased.new(value: 2))
       )
     end
   end
 
-  describe "terminal?" do
+  describe "#terminal?" do
     it "returns false when not defined" do
       decider = Decider.define do
-        state init: 0
+        initial_state State.new(value: 0)
       end
 
       refute(
@@ -145,7 +132,7 @@ class TestDecider < Minitest::Spec
 
     it "returns true for terminated state" do
       decider = Decider.define do
-        state value: 100
+        initial_state State.new(value: 100)
 
         terminal? do |state|
           state.value <= 0
@@ -157,7 +144,7 @@ class TestDecider < Minitest::Spec
       )
 
       assert(
-        decider.terminal?(decider.new(value: 0))
+        decider.terminal?(State.new(value: 0))
       )
     end
   end

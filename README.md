@@ -21,6 +21,16 @@ gem "decide.rb"
 ```ruby
 require "decider"
 
+State = Data.define(:value) do
+  def max?
+    value >= MAX
+  end
+  
+  def min?
+    value <= MIN
+  end
+end
+
 module Commands
   Increase = Data.define
   Decrease = Data.define
@@ -36,16 +46,7 @@ MAX = 100
 
 ValueDecider = Decider.define do
   # define intial state
-  state value: 0 do
-    # you can define custom methods on state
-    def max?
-      value >= MAX
-    end
-
-    def min?
-      value <= MIN
-    end
-  end
+  initial_state State.new(value: 0)
 
   # decide command with state
   decide Commands::Increase do |command, state|
@@ -89,8 +90,11 @@ new_state = events.reduce(state) { |state, event| ValueDecider.evolve(state, eve
 You can also compose deciders:
 
 ```ruby
+Left = Data.define(:value)
+Right = Data.define(:value)
+
 left = Decider.define do
-  state value: 0
+  initial_state Left.new(value: 0)
 
   decide Commands::LeftCommand do |command, state|
     [Events::LeftEvent.new(value: command.value)]
@@ -106,7 +110,7 @@ left = Decider.define do
 end
 
 right = Decider.define do
-  state value: 0
+  initial_state Right.new(value: 0)
 
   decide Commands::RightCommand do |command, state|
     [Events::RightEvent.new(value: command.value)]
@@ -124,7 +128,7 @@ end
 Composition = Decider.compose(left, right)
 
 state = Composition.initial_state
-#> #<data left=#<data value=0>, right=#<data value=0>>
+#> #<data left=#<data Left value=0>, right=#<data Right value=0>>
 
 events = Composition.decide(Commands::LeftCommand.new(value: 1), state)
 #> [#<data value=1>]

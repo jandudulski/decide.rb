@@ -3,43 +3,47 @@
 require "test_helper"
 
 class TestCompose < Minitest::Spec
-  describe "initial_state" do
+  Tuple = Data.define(:left, :right)
+  Left = Data.define(:value)
+  Right = Data.define(:value)
+
+  describe "#initial_state" do
     it "composes initial states" do
       left = Decider.define do
-        state key: "left"
+        initial_state Left.new(value: 0)
       end
 
       right = Decider.define do
-        state key: "right"
+        initial_state Right.new(value: 0)
       end
 
       composition = Decider.compose(left, right)
 
       assert_equal(
-        composition.new(
+        Tuple.new(
           left: left.initial_state,
           right: right.initial_state
-        ),
-        composition.initial_state
+        ).to_h,
+        composition.initial_state.to_h
       )
     end
   end
 
-  describe "terminal?" do
+  describe "#terminal?" do
     it "returns false when none are terminated" do
       left = Decider.define do
-        state terminated?: false
+        initial_state Left.new(value: false)
 
         terminal? do |state|
-          state.terminated?
+          state.value
         end
       end
 
       right = Decider.define do
-        state terminated?: false
+        initial_state Right.new(value: false)
 
         terminal? do |state|
-          state.terminated?
+          state.value
         end
       end
 
@@ -50,18 +54,18 @@ class TestCompose < Minitest::Spec
 
     it "returns false when left is terminated" do
       left = Decider.define do
-        state terminated?: true
+        initial_state Left.new(value: true)
 
         terminal? do |state|
-          state.terminated?
+          state.value
         end
       end
 
       right = Decider.define do
-        state terminated?: false
+        initial_state Right.new(value: false)
 
         terminal? do |state|
-          state.terminated?
+          state.value
         end
       end
 
@@ -72,18 +76,18 @@ class TestCompose < Minitest::Spec
 
     it "returns false when right is terminated" do
       left = Decider.define do
-        state terminated?: false
+        initial_state Left.new(value: false)
 
         terminal? do |state|
-          state.terminated?
+          state.value
         end
       end
 
       right = Decider.define do
-        state terminated?: true
+        initial_state Right.new(value: true)
 
         terminal? do |state|
-          state.terminated?
+          state.value
         end
       end
 
@@ -94,18 +98,18 @@ class TestCompose < Minitest::Spec
 
     it "returns true when both are terminated" do
       left = Decider.define do
-        state terminated?: true
+        initial_state Left.new(value: true)
 
         terminal? do |state|
-          state.terminated?
+          state.value
         end
       end
 
       right = Decider.define do
-        state terminated?: true
+        initial_state Right.new(value: true)
 
         terminal? do |state|
-          state.terminated?
+          state.value
         end
       end
 
@@ -121,7 +125,7 @@ class TestCompose < Minitest::Spec
       levent = Data.define(:value)
 
       left = Decider.define do
-        state key: 0
+        initial_state Left.new(value: 0)
 
         decide(lcommand) do |command, state|
           [levent.new(value: command.value)]
@@ -132,7 +136,7 @@ class TestCompose < Minitest::Spec
       revent = Data.define(:value)
 
       right = Decider.define do
-        state key: 0
+        initial_state Right.new(value: 0)
 
         decide(rcommand) do |command, state|
           [revent.new(value: command.value)]
@@ -153,12 +157,12 @@ class TestCompose < Minitest::Spec
     end
   end
 
-  describe "evolve" do
+  describe "#evolve" do
     it "composes evolutions" do
       levent = Data.define(:value)
 
       left = Decider.define do
-        state value: 0
+        initial_state Left.new(value: 0)
 
         evolve(levent) do |state, event|
           state.with(value: state.value + event.value)
@@ -168,7 +172,7 @@ class TestCompose < Minitest::Spec
       revent = Data.define(:value)
 
       right = Decider.define do
-        state value: 0
+        initial_state Right.new(value: 0)
 
         evolve(revent) do |state, event|
           state.with(value: state.value + event.value)
@@ -183,11 +187,11 @@ class TestCompose < Minitest::Spec
       ].reduce(composition.initial_state, &composition.method(:evolve))
 
       assert_equal(
-        composition.new(
-          left: left.new(value: 1),
-          right: right.new(value: 2)
-        ),
-        state
+        Tuple.new(
+          left: Left.new(value: 1),
+          right: Right.new(value: 2)
+        ).to_h,
+        state.to_h
       )
     end
   end

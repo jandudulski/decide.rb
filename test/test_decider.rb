@@ -36,7 +36,7 @@ class TestDecider < Minitest::Spec
   end
 
   describe "#decide" do
-    it "raises when command not defined" do
+    it "returns empty list when command not defined" do
       decider = Decider.define do
         initial_state State.new(value: 0)
 
@@ -45,9 +45,10 @@ class TestDecider < Minitest::Spec
         end
       end
 
-      assert_raises(ArgumentError, "Unknown command: TestDecider::Increase") do
+      assert_equal(
+        [],
         decider.decide(Decrease.new(value: 2), decider.initial_state)
-      end
+      )
     end
 
     it "executes a defined command" do
@@ -79,8 +80,24 @@ class TestDecider < Minitest::Spec
     end
   end
 
+  describe "#decide!" do
+    it "raises when command not defined" do
+      decider = Decider.define do
+        initial_state State.new(value: 0)
+
+        decide Increase do |_command, _state|
+          []
+        end
+      end
+
+      assert_raises(ArgumentError, "Unknown command: TestDecider::Increase") do
+        decider.decide!(Decrease.new(value: 2), decider.initial_state)
+      end
+    end
+  end
+
   describe "#evolve" do
-    it "raises when event not defined" do
+    it "returns state when event not defined" do
       decider = Decider.define do
         initial_state State.new(value: 0)
 
@@ -89,9 +106,12 @@ class TestDecider < Minitest::Spec
         end
       end
 
-      assert_raises(ArgumentError, "Unknown event: TestDecider::ValueDecreased") do
-        decider.evolve(decider.initial_state, ValueDecreased.new(value: 2))
-      end
+      state = decider.initial_state
+
+      assert_equal(
+        state,
+        decider.evolve(state, ValueDecreased.new(value: 2))
+      )
     end
 
     it "evolves a defined event" do
@@ -116,6 +136,22 @@ class TestDecider < Minitest::Spec
         State.new(value: 3),
         decider.evolve(decider.initial_state, ValueDecreased.new(value: 2))
       )
+    end
+  end
+
+  describe "#evolve!" do
+    it "raises when event not defined" do
+      decider = Decider.define do
+        initial_state State.new(value: 0)
+
+        evolve ValueIncreased do |state, event|
+          state.with(value: state.value + event.value)
+        end
+      end
+
+      assert_raises(ArgumentError, "Unknown event: TestDecider::ValueDecreased") do
+        decider.evolve!(decider.initial_state, ValueDecreased.new(value: 2))
+      end
     end
   end
 

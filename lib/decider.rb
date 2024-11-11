@@ -42,7 +42,7 @@ module Decider
         evolvers.keys
       end
 
-      define_method(:decide) do |command, state|
+      define_method(:decide!) do |command, state|
         handler = deciders.fetch(command.class) {
           raise ArgumentError, "Unknown command: #{command.class}"
         }
@@ -50,9 +50,25 @@ module Decider
         handler.call(command, state)
       end
 
-      define_method(:evolve) do |state, event|
+      define_method(:decide) do |command, state|
+        handler = deciders.fetch(command.class) {
+          return []
+        }
+
+        handler.call(command, state)
+      end
+
+      define_method(:evolve!) do |state, event|
         handler = evolvers.fetch(event.class) {
           raise ArgumentError, "Unknown event: #{event.class}"
+        }
+
+        handler.call(state, event)
+      end
+
+      define_method(:evolve) do |state, event|
+        handler = evolvers.fetch(event.class) {
+          return state
         }
 
         handler.call(state, event)

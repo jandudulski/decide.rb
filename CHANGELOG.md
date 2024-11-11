@@ -1,4 +1,8 @@
-# Unreleased
+# 0.4.1
+
+* `define` returns new class, not object
+
+# 0.4.0
 
 * Accept more data structures for commands and events
 

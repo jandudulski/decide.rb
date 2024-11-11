@@ -10,6 +10,16 @@ class TestDecider < Minitest::Spec
   ValueIncreased = Data.define(:value)
   ValueDecreased = Data.define(:value)
 
+  describe ".define" do
+    it "creates a new class" do
+      decider = Decider.define do
+        initial_state :foo
+      end
+
+      assert_pattern { Class === decider }
+    end
+  end
+
   describe ".initial_state" do
     it "raises if initial state not defined" do
       assert_raises(Decider::StateNotDefined) do

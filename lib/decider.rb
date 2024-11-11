@@ -101,7 +101,7 @@ module Decider
 
       raise StateNotDefined if @initial_state == DEFAULT
 
-      decider = Object.new
+      decider = Class.new
 
       @module = Module.new(
         initial_state: @initial_state,

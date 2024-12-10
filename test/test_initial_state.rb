@@ -3,8 +3,6 @@
 require "test_helper"
 
 class TestInitialState < Minitest::Test
-  State = Data.define(:value)
-
   describe ".initial_state" do
     it "raises if initial state not defined" do
       assert_raises(Decider::StateNotDefined) do
@@ -15,8 +13,8 @@ class TestInitialState < Minitest::Test
     it "raises if initial state already defined" do
       assert_raises(Decider::StateAlreadyDefined) do
         Decider.define do
-          initial_state State.new(value: 1)
-          initial_state State.new(value: 2)
+          initial_state 0
+          initial_state 1
         end
       end
     end
@@ -25,10 +23,10 @@ class TestInitialState < Minitest::Test
   describe "#initial_state" do
     it "returns defined state" do
       decider = Decider.define do
-        initial_state State.new(value: "value")
+        initial_state 0
       end
 
-      assert_equal decider.initial_state, State.new(value: "value")
+      assert_equal decider.initial_state, 0
     end
 
     it "returns composed initial states" do
@@ -43,7 +41,9 @@ class TestInitialState < Minitest::Test
       composition = Decider.compose(left, right)
 
       assert_equal(
-        [left.initial_state, right.initial_state],
+        Decider::Pair.new(
+          left: left.initial_state, right: right.initial_state
+        ),
         composition.initial_state
       )
     end

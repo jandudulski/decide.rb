@@ -49,7 +49,7 @@ ValueDecider = Decider.define do
   initial_state State.new(value: 0)
 
   # decide command with state
-  decide Commands::Increase do |command, state|
+  decide Commands::Increase do
     # return collection of events
     if state.max?
       []
@@ -58,7 +58,7 @@ ValueDecider = Decider.define do
     end
   end
 
-  decide Commands::Decrease do |command, state|
+  decide Commands::Decrease do
     if state.min?
       []
     else
@@ -67,17 +67,17 @@ ValueDecider = Decider.define do
   end
 
   # evolve state with events
-  evolve Events::ValueIncreased do |state, event|
+  evolve Events::ValueIncreased do
     # return new state
     state.with(value: state.value + 1)
   end
 
-  evolve Events::ValueDecreased do |state, event|
+  evolve Events::ValueDecreased do
     # state is immutable Data object
     state.with(value: state.value - 1)
   end
 
-  terminal? do |state|
+  terminal? do
     state <= 0
   end
 end
@@ -96,15 +96,15 @@ Right = Data.define(:value)
 left = Decider.define do
   initial_state Left.new(value: 0)
 
-  decide Commands::LeftCommand do |command, state|
+  decide Commands::LeftCommand do
     [Events::LeftEvent.new(value: command.value)]
   end
 
-  evolve Events::LeftEvent do |state, event|
+  evolve Events::LeftEvent do
     state.with(value: state.value + 1)
   end
 
-  terminal? do |state|
+  terminal? do
     state <= 0
   end
 end
@@ -112,15 +112,15 @@ end
 right = Decider.define do
   initial_state Right.new(value: 0)
 
-  decide Commands::RightCommand do |command, state|
+  decide Commands::RightCommand do
     [Events::RightEvent.new(value: command.value)]
   end
 
-  evolve Events::RightEvent do |state, event|
+  evolve Events::RightEvent do
     state.with(value: state.value + 1)
   end
 
-  terminal? do |state|
+  terminal? do
     state <= 0
   end
 end
@@ -128,13 +128,13 @@ end
 Composition = Decider.compose(left, right)
 
 state = Composition.initial_state
-#> #<data left=#<data Left value=0>, right=#<data Right value=0>>
+#> #<data Decider::Pair left=#<data Left value=0>, right=#<data Right value=0>>
 
-events = Composition.decide(Commands::LeftCommand.new(value: 1), state)
-#> [#<data value=1>]
+events = Composition.decide(Decider::Left.new(Commands::LeftCommand.new(value: 1)), state)
+#> [#<Decider::Left value=#<data value=1>]
 
 state = events.reduce(state, &Composition.method(:evolve))
-#> #<data left=#<data value=1>, right=#<data value=0>>
+#> #<data Decider::Pair left=#<data value=1>, right=#<data value=0>>
 ```
 
 ## Development

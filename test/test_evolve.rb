@@ -12,8 +12,8 @@ class TestEvolve < Minitest::Spec
       decider = Decider.define do
         initial_state 0
 
-        evolve Increased do |state, event|
-          state.with(value: state.value + event.value)
+        evolve Increased do
+          state + event.value
         end
       end
 
@@ -25,15 +25,32 @@ class TestEvolve < Minitest::Spec
       )
     end
 
+    it "allows to define catch-all" do
+      decider = Decider.define do
+        initial_state 0
+
+        evolve proc { true } do
+          42
+        end
+      end
+
+      state = decider.initial_state
+
+      assert_equal(
+        42,
+        decider.evolve(state, Decreased.new(value: 1))
+      )
+    end
+
     it "evolves with a defined event" do
       decider = Decider.define do
         initial_state State.new(value: 5)
 
-        evolve Increased do |state, event|
+        evolve Increased do
           state.with(value: state.value + event.value)
         end
 
-        evolve Decreased do |state, event|
+        evolve Decreased do
           state.with(value: state.value - event.value)
         end
       end
@@ -49,15 +66,48 @@ class TestEvolve < Minitest::Spec
       )
     end
 
+    it "evolves for state" do
+      decider = Decider.define do
+        initial_state 0
+
+        evolve 0, Increased do
+          1
+        end
+
+        evolve 1, Increased do
+          2
+        end
+
+        evolve Increased do
+          state + event.value
+        end
+      end
+
+      assert_equal(
+        1,
+        decider.evolve(0, Increased.new(value: 123))
+      )
+
+      assert_equal(
+        2,
+        decider.evolve(1, Increased.new(value: 123))
+      )
+
+      assert_equal(
+        42,
+        decider.evolve(42, Increased.new(value: 0))
+      )
+    end
+
     it "can evolve with primitives" do
       decider = Decider.define do
         initial_state State.new(value: 5)
 
-        evolve :increased do |state, event|
+        evolve :increased do
           state.with(value: state.value + 1)
         end
 
-        evolve :decreased do |state, event|
+        evolve :decreased do
           state.with(value: state.value - 1)
         end
       end
@@ -72,45 +122,51 @@ class TestEvolve < Minitest::Spec
         decider.evolve(decider.initial_state, :decreased)
       )
     end
-  end
 
-  describe "#evolve!" do
-    it "can evolve with primitives" do
+    it "can pattern match" do
       decider = Decider.define do
         initial_state State.new(value: 5)
 
-        evolve :increased do |state, event|
-          state.with(value: state.value + 1)
-        end
-
-        evolve :decreased do |state, event|
-          state.with(value: state.value - 1)
+        evolve proc { [state, event] in [State(value: 5), Increased(value: 1)] } do
+          state.with(value: 0)
         end
       end
 
       assert_equal(
-        State.new(value: 6),
-        decider.evolve!(decider.initial_state, :increased)
-      )
-
-      assert_equal(
-        State.new(value: 4),
-        decider.evolve!(decider.initial_state, :decreased)
+        State.new(value: 0),
+        decider.evolve(decider.initial_state, Increased.new(value: 1))
       )
     end
 
-    it "raises when event not defined" do
-      decider = Decider.define do
-        initial_state State.new(value: 0)
+    it "composes evolutions" do
+      levent = Data.define
 
-        evolve Increased do |state, event|
-          state.with(value: state.value + event.value)
+      left = Decider.define do
+        initial_state nil
+
+        evolve(levent) do
+          :left
         end
       end
 
-      assert_raises(ArgumentError, "Unknown event: TestDecider::ValueDecreased") do
-        decider.evolve!(decider.initial_state, Decreased.new(value: 2))
+      revent = Data.define
+
+      right = Decider.define do
+        initial_state nil
+
+        evolve(revent) do
+          :right
+        end
       end
+
+      composition = Decider.compose(left, right)
+
+      state = [
+        Decider::Left.new(levent.new),
+        Decider::Right.new(revent.new)
+      ].reduce(composition.initial_state, &composition.method(:evolve))
+
+      assert_equal(Decider::Pair.new(left: :left, right: :right), state)
     end
   end
 end

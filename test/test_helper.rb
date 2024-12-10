@@ -23,8 +23,8 @@ class With
     self
   end
 
-  def then(expected)
-    context.assert_equal(expected, result)
+  def then(events)
+    context.assert_equal(events, result)
   end
 
   private

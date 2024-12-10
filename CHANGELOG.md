@@ -1,3 +1,11 @@
+# Unreleased
+
+* Support pattern matching for commands and events
+* Support passing state to decider and evolve matchers
+* Remove explicit arguments for handlers
+* Remove redundant bang methods - raise error in catch-all if needed
+* Add Left|Right value wrappers for composition
+
 # 0.4.1
 
 * `define` returns new class, not object

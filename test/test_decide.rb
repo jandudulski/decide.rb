@@ -14,7 +14,7 @@ class TestDecide < Minitest::Test
         initial_state 0
 
         decide Increase do
-          [:increased]
+          emit :increased
         end
       end
 
@@ -29,11 +29,11 @@ class TestDecide < Minitest::Test
         initial_state 0
 
         decide Decrease, 1 do
-          [:increased]
+          emit :increased
         end
 
         decide proc { true } do
-          [:nothing]
+          emit :nothing
         end
       end
 
@@ -48,11 +48,11 @@ class TestDecide < Minitest::Test
         initial_state 0
 
         decide Increase do
-          [state + command.value]
+          emit state + command.value
         end
 
         decide Decrease do
-          [state - command.value]
+          emit state - command.value
         end
       end
 
@@ -72,7 +72,7 @@ class TestDecide < Minitest::Test
         initial_state 0
 
         decide Increase do
-          [command.value]
+          emit command.value
         end
       end
 
@@ -87,11 +87,11 @@ class TestDecide < Minitest::Test
         initial_state 0
 
         decide Increase, 0 do
-          [command.value]
+          emit command.value
         end
 
         decide Increase, 1 do
-          [42]
+          emit 42
         end
       end
 
@@ -111,15 +111,15 @@ class TestDecide < Minitest::Test
         initial_state State.new(value: 0)
 
         decide proc { [command, state] in [Increase(value:), State(value: ^value)] } do
-          [42]
+          emit 42
         end
 
         decide Increase, State do
-          [1]
+          emit 1
         end
 
         decide proc { command in Decrease(value: 2) } do
-          [command.value]
+          emit command.value
         end
       end
 
@@ -144,11 +144,11 @@ class TestDecide < Minitest::Test
         initial_state 0
 
         decide :increase, 0 do
-          [5]
+          emit 5
         end
 
         decide :increase, 1 do
-          [10]
+          emit 10
         end
       end
 
@@ -163,6 +163,22 @@ class TestDecide < Minitest::Test
       )
     end
 
+    it "emits multiple events" do
+      decider = Decider.define do
+        initial_state 0
+
+        decide :double do
+          emit :foo
+          emit :bar
+        end
+      end
+
+      assert_equal(
+        [:foo, :bar],
+        decider.decide(:double, decider.initial_state)
+      )
+    end
+
     it "composes decisions" do
       lcommand = Data.define
 
@@ -170,7 +186,7 @@ class TestDecide < Minitest::Test
         initial_state 0
 
         decide(lcommand) do
-          [:levent]
+          emit :levent
         end
       end
 
@@ -180,7 +196,7 @@ class TestDecide < Minitest::Test
         initial_state 0
 
         decide(rcommand) do
-          [:revent]
+          emit :revent
         end
       end
 

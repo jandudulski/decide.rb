@@ -29,7 +29,7 @@ class With
 
   private
 
-  attr_reader :decider, :state, :result
+  attr_reader :context, :decider, :state, :result
 end
 
 def with(context, decider)

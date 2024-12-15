@@ -5,6 +5,7 @@
 * Remove explicit arguments for handlers
 * Remove redundant bang methods - raise error in catch-all if needed
 * Add Left|Right value wrappers for composition
+* Use `emit` to return events in `decide`
 
 # 0.4.1
 

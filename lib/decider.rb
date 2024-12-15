@@ -39,10 +39,14 @@ module Decider
   end
 
   class Module < ::Module
-    DECIDE_FALLBACK = proc { [nil, proc { [] }] }
+    DECIDE_FALLBACK = proc { [nil, proc {}] }
     EVOLVE_FALLBACK = proc { [nil, proc { state }] }
 
-    Decide = Data.define(:command, :state)
+    Decide = Data.define(:command, :state, :_events) do
+      def emit(*events)
+        _events.push(*events)
+      end
+    end
     Evolve = Data.define(:state, :event)
     Terminal = Data.define(:state)
 
@@ -52,7 +56,7 @@ module Decider
       end
 
       define_method(:decide) do |command, state|
-        context = Decide.new(command: command, state: state)
+        context = Decide.new(command: command, state: state, _events: [])
 
         deciders.find(DECIDE_FALLBACK) do |args, _|
           case args
@@ -68,6 +72,7 @@ module Decider
         end => [_, handler]
 
         context.instance_exec(&handler)
+        context._events
       end
 
       define_method(:evolve) do |state, event|
@@ -164,21 +169,21 @@ module Decider
         right: right.initial_state
       )
 
-      decide proc { [command] in [[:left, _]] } do
-        left.decide(command.value, state.left).map { Left.new(_1) }
+      decide proc { command in [:left, _] } do
+        left.decide(command.value, state.left).each { emit Left.new(_1) }
       end
 
-      decide proc { [command] in [[:right, _]] } do
-        right.decide(command.value, state.right).map { Right.new(_1) }
+      decide proc { command in [:right, _] } do
+        right.decide(command.value, state.right).each { emit Right.new(_1) }
       end
 
-      evolve proc { [event] in [[:left, _]] } do
+      evolve proc { event in [:left, _] } do
         state.with(
           left: left.evolve(state.left, event.value)
         )
       end
 
-      evolve proc { [event] in [[:right, _]] } do
+      evolve proc { event in [:right, _] } do
         state.with(
           right: right.evolve(state.right, event.value)
         )

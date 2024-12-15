@@ -1,4 +1,4 @@
-# Unreleased
+# 0.5.0
 
 * Support pattern matching for commands and events
 * Support passing state to decider and evolve matchers

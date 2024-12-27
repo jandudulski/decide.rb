@@ -2,7 +2,9 @@
 
 require "test_helper"
 
-class TestBulb < Minitest::Test
+class TestBulb < Minitest::Spec
+  include DeciderHelpers
+
   Fit = Data.define(:max_uses)
   SwitchOn = Data.define
   SwitchOff = Data.define
@@ -60,130 +62,108 @@ class TestBulb < Minitest::Test
 
   describe "bulb decider" do
     it "fits" do
-      With.new(
-        self, BulbDecider
-      ).given(
-        []
+      With(
+        BulbDecider
       ).when(
         Fit.new(max_uses: 5)
       ).then(
-        [Fitted.new(max_uses: 5)]
+        Fitted.new(max_uses: 5)
       )
     end
 
     it "errors when trying to fit fitted bulb" do
-      decider = With.new(
-        self, BulbDecider
+      With(
+        BulbDecider
       ).given(
-        [Fitted.new(max_uses: 5)]
+        Fitted.new(max_uses: 5)
+      ).when(
+        Fit.new(max_uses: 1)
+      ).then_error(
+        RuntimeError, "Bulb has already been fitted"
       )
-
-      assert_raises(RuntimeError, "Bulb has already been fitted") {
-        decider.when(Fit.new(max_uses: 1))
-      }
     end
 
     it "switch on" do
-      With.new(
-        self, BulbDecider
+      With(
+        BulbDecider
       ).given(
-        [Fitted.new(max_uses: 5)]
+        Fitted.new(max_uses: 5)
       ).when(
         SwitchOn.new
       ).then(
-        [SwitchedOn.new]
+        SwitchedOn.new
       )
     end
 
     it "does nothing when already switched on" do
-      With.new(
-        self, BulbDecider
+      With(
+        BulbDecider
       ).given(
-        [
-          Fitted.new(max_uses: 5),
-          SwitchedOn.new
-        ]
+        Fitted.new(max_uses: 5),
+        SwitchedOn.new
       ).when(
         SwitchOn.new
-      ).then(
-        []
-      )
+      ).then_nothing
     end
 
     it "does not switch on when already blown" do
-      With.new(
-        self, BulbDecider
+      With(
+        BulbDecider
       ).given(
-        [
-          Blew.new
-        ]
+        Blew.new
       ).when(
         SwitchOn.new
-      ).then(
-        []
-      )
+      ).then_nothing
     end
 
     it "switch off" do
-      With.new(
-        self, BulbDecider
+      With(
+        BulbDecider
       ).given(
-        [
-          Fitted.new(max_uses: 5),
-          SwitchedOn.new
-        ]
+        Fitted.new(max_uses: 5),
+        SwitchedOn.new
       ).when(
         SwitchOff.new
       ).then(
-        [SwitchedOff.new]
+        SwitchedOff.new
       )
     end
 
     it "does nothing when already switched off" do
-      With.new(
-        self, BulbDecider
+      With(
+        BulbDecider
       ).given(
-        [
-          Fitted.new(max_uses: 5),
-          SwitchedOn.new,
-          SwitchedOff.new
-        ]
+        Fitted.new(max_uses: 5),
+        SwitchedOn.new,
+        SwitchedOff.new
       ).when(
         SwitchOff.new
-      ).then(
-        []
-      )
+      ).then_nothing
     end
 
     it "does not switch off when already blown" do
-      With.new(
-        self, BulbDecider
+      With(
+        BulbDecider
       ).given(
-        [
-          Blew.new
-        ]
+        Blew.new
       ).when(
         SwitchOff.new
-      ).then(
-        []
-      )
+      ).then_nothing
     end
 
     it "blew" do
-      With.new(
-        self, BulbDecider
+      With(
+        BulbDecider
       ).given(
-        [
-          Fitted.new(max_uses: 2),
-          SwitchedOn.new,
-          SwitchedOff.new,
-          SwitchedOn.new,
-          SwitchedOff.new
-        ]
+        Fitted.new(max_uses: 2),
+        SwitchedOn.new,
+        SwitchedOff.new,
+        SwitchedOn.new,
+        SwitchedOff.new
       ).when(
         SwitchOn.new
       ).then(
-        [Blew.new]
+        Blew.new
       )
     end
   end

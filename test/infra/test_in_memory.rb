@@ -55,10 +55,10 @@ module Infra
       it "handles race conditions" do
         handler = Decider::InMemory.new(Example)
 
-        threads = Concurrent::Array.new(4) do
+        threads = Array.new(4) do
           Thread.new { handler.call(:slow) }
         end
-        threads.each(&:run).each(&:join)
+        threads.each(&:join)
 
         assert_equal 4, handler.state
       end

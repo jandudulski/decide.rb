@@ -1,39 +1,11 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "infra/example"
 require "decider/in_memory"
 
 module Infra
   class TestInMemory < Minitest::Spec
-    Example = Decider.define do
-      initial_state 0
-
-      decide :increase do
-        emit :increased
-      end
-
-      decide :slow do
-        emit :slow
-      end
-
-      decide :decrease do
-        emit :decreased
-      end
-
-      evolve :increased do
-        state + 1
-      end
-
-      evolve :decreased do
-        state - 1
-      end
-
-      evolve :slow do
-        sleep 0.1
-        state + 1
-      end
-    end
-
     describe "#call" do
       it "returns decide result" do
         handler = Decider::InMemory.new(Example)

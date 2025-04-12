@@ -103,6 +103,10 @@ module Decider
       define_method(:dimap_on_state) do |fl:, fr:|
         Decider.dimap_on_state(self, fl: fl, fr: fr)
       end
+
+      define_method(:dimap_on_event) do |fl:, fr:|
+        Decider.dimap_on_event(self, fl: fl, fr: fr)
+      end
     end
   end
 
@@ -213,6 +217,26 @@ module Decider
 
       terminal? do
         decider.terminal?(fl.call(state))
+      end
+    end
+  end
+
+  def self.dimap_on_event(decider, fl:, fr:)
+    define do
+      initial_state decider.initial_state
+
+      decide proc { true } do
+        decider.decide(command, state).each do |event|
+          emit fr.call(event)
+        end
+      end
+
+      evolve proc { true } do
+        decider.evolve(state, fl.call(event))
+      end
+
+      terminal? do
+        decider.terminal?(state)
       end
     end
   end

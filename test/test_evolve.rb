@@ -168,5 +168,20 @@ class TestEvolve < Minitest::Spec
 
       assert_equal(Decider::Pair.new(left: :left, right: :right), state)
     end
+
+    it "provides proc for shortcut" do
+      decider = Decider.define do
+        initial_state 0
+
+        evolve :increased do
+          state + 1
+        end
+      end
+
+      assert_equal(
+        2,
+        [:increased, :increased].reduce(decider.initial_state, &decider.evolve)
+      )
+    end
   end
 end

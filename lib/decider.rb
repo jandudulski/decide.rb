@@ -47,7 +47,11 @@ module Decider
         _events.push(*events)
       end
     end
-    Evolve = Data.define(:state, :event)
+    Evolve = Data.define(:state, :event) do
+      def self.build(state, event)
+        new(state: state, event: event)
+      end
+    end
     Terminal = Data.define(:state)
 
     def initialize(initial_state:, deciders:, evolutions:, terminal:)
@@ -75,23 +79,27 @@ module Decider
         context._events
       end
 
-      define_method(:evolve) do |state, event|
-        context = Evolve.new(state: state, event: event)
+      define_method(:evolve) do |*args|
+        if args.empty?
+          ->(state, event) { evolve(state, event) }
+        else
+          context = Evolve.build(*args)
 
-        evolutions.find(EVOLVE_FALLBACK) do |args, _|
-          case args
-          in [Proc => fn]
-            context.instance_exec(&fn)
-          in [etype]
-            event in ^etype
-          in [stype, etype]
-            [state, event] in [^stype, ^etype]
-          else
-            false
-          end
-        end => [_, handler]
+          evolutions.find(EVOLVE_FALLBACK) do |args, _|
+            case args
+            in [Proc => fn]
+              context.instance_exec(&fn)
+            in [etype]
+              context.event in ^etype
+            in [stype, etype]
+              [context.state, context.event] in [^stype, ^etype]
+            else
+              false
+            end
+          end => [_, handler]
 
-        context.instance_exec(&handler)
+          context.instance_exec(&handler)
+        end
       end
 
       define_method(:terminal?) do |state|

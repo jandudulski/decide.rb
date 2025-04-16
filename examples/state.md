@@ -8,11 +8,11 @@ State = Data.define(:value)
 decider = Decider.define do
   initial_state State.new(value: 0)
 
-  decide Commands::Command do |command, state|
-    [Events::Event.new(value: command.value)]
+  decide Commands::Command do
+    emit Events::Event.new(value: command.value)
   end
 
-  evolve Events::Event do |state, event|
+  evolve Events::Event do
     state.with(value: state.value + 1)
   end
 end
@@ -24,26 +24,16 @@ end
 decider = Decider.define do
   initial_state :turned_off
 
-  decide Commands::TurnOn do |_command, state|
-    case state
-    in :turned_off
-      [Events::TurnedOn.new]
-    else
-      []
-    end
+  decide Commands::TurnOn, :turned_off do
+    emit Events::TurnedOn.new
   end
 
-  decide Commands::TurnOff do |_command, state|
-    case state
-    in :turned_on
-      [Events::TurnedOn.new]
-    else
-      []
-    end
+  decide Commands::TurnOff, :turned_on do
+    emit Events::TurnedOff.new
   end
 
-  evolve Events::TurnedOn do |_state, _event|
-    :turned_off
+  evolve Events::TurnedOn do
+    :turned_on
   end
 end
 ```
@@ -54,12 +44,12 @@ end
 decider = Decider.define do
   initial_state []
 
-  decide Commands::Command do |command, _state|
-    [Events::Event.new(value: command.value)]
+  decide Commands::Command, [] do
+    emit Events::Event.new(value: command.value)
   end
 
-  evolve Events::Event do |state, event|
-    state = state + [event]
+  evolve Events::Event do
+    state + [event]
   end
 end
 ```

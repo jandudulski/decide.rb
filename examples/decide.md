@@ -18,7 +18,7 @@ decider = Decider.define do
 end
 
 decider.decide Command.new(value: 10), decider.initial_state
-#> [Event.new(value: 15)]
+#> [#<data Event value=15>]
 ```
 
 ## Match by command and state
@@ -138,7 +138,7 @@ decider = Decider.define do
     emit [:started, command.value]
   end
 
-  decide proc { [command, state] in [Stop, [:started, _]] } do
+  decide proc { [command, state] in [Stop, :started] } do
     emit :stopped
   end
 end

@@ -108,8 +108,24 @@ module Decider
         context.instance_exec(&terminal)
       end
 
+      define_method(:lmap_on_state) do |fn|
+        Decider.lmap_on_state(self, fn)
+      end
+
+      define_method(:rmap_on_state) do |fn|
+        Decider.rmap_on_state(self, fn)
+      end
+
       define_method(:dimap_on_state) do |fl:, fr:|
         Decider.dimap_on_state(self, fl: fl, fr: fr)
+      end
+
+      define_method(:lmap_on_event) do |fn|
+        Decider.lmap_on_event(self, fn)
+      end
+
+      define_method(:rmap_on_event) do |fn|
+        Decider.rmap_on_event(self, fn)
       end
 
       define_method(:dimap_on_event) do |fl:, fr:|
@@ -211,6 +227,14 @@ module Decider
     end
   end
 
+  def self.lmap_on_state(decider, fn)
+    dimap_on_state(decider, fl: fn, fr: ->(state) { state })
+  end
+
+  def self.rmap_on_state(decider, fn)
+    dimap_on_state(decider, fl: ->(state) { state }, fr: fn)
+  end
+
   def self.dimap_on_state(decider, fl:, fr:)
     define do
       initial_state fr.call(decider.initial_state)
@@ -227,6 +251,14 @@ module Decider
         decider.terminal?(fl.call(state))
       end
     end
+  end
+
+  def self.lmap_on_event(decider, fn)
+    dimap_on_event(decider, fl: fn, fr: ->(event) { event })
+  end
+
+  def self.rmap_on_event(decider, fn)
+    dimap_on_event(decider, fl: ->(event) { event }, fr: fn)
   end
 
   def self.dimap_on_event(decider, fl:, fr:)

@@ -1,3 +1,67 @@
+# 0.5.4
+
+* Add `lmap_on_event` and `rmap_on_event` extensions that takes proc that maps event in or out and returns a new decider
+
+```ruby
+decider = Decider.define do
+  initial_state 0
+
+  decide :increase do
+    :increased
+  end
+
+  evolve :increased do
+    state + 1
+  end
+end
+
+lmap = decider.lmap_on_event(->(event) { event.to_sym })
+lmap.evolve(0, "increased")
+# => 1
+
+rmap = decider.rmap_on_event(->(event) { event.to_s })
+rmap.decide(:increase, 0)
+# => "increased"
+```
+
+* Add `lmap_on_state` and `rmap_on_state` extensions that takes proc that maps state in or out and returns a new decider
+
+```ruby
+decider = Decider.define do
+  initial_state :symbol
+
+  decide :command, :state do
+    emit :called
+  end
+
+  evolve :state, :called do
+    :new_state
+  end
+end
+decider.initial_state
+# => :symbol
+
+lmap = decider.lmap_on_state(
+  ->(state) { state.to_sym }
+)
+lmap.initial_state
+# => :symbol
+lmap.decide(:command, "symbol")
+# => [:called]
+lmap.evolve("symbol", :called)
+# => :new_state
+
+rmap = inner.rmap_on_state(
+  ->(state) { state.to_s }
+)
+rmap.initial_state
+# => "symbol"
+rmap.decide(:command, :symbol)
+# => [:called]
+rmap.evolve(:symbol, :called)
+# => "new_state"
+```
+
 # 0.5.3
 
 * Add shortcut for evolving:
@@ -28,7 +92,7 @@ inner = Decider.define do
   end
 end
 
-outer = decider.dimap_on_event(
+outer = inner.dimap_on_event(
   fl: ->(event) { event.to_sym },
   fr: ->(event) { event.to_s }
 )
@@ -51,7 +115,7 @@ end
 inner.initial_state
 # => :symbol
 
-outer = decider.dimap_on_state(
+outer = inner.dimap_on_state(
   fl: ->(state) { state.to_sym },
   fr: ->(state) { state.to_s }
 )

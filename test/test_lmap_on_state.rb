@@ -11,7 +11,7 @@ class TestLmapOnState < Minitest::Test
         initial_state State.new(value: 0)
       end
 
-      decider = Decider.lmap_on_state(decider, ->(state) {})
+      decider = Decider.lmap_on_state(->(state) {}, decider)
 
       assert_equal(State.new(value: 0), decider.initial_state)
     end
@@ -26,7 +26,7 @@ class TestLmapOnState < Minitest::Test
       end
 
       decider = Decider.lmap_on_state(
-        decider, ->(state) { State.new(value: state[:value]) }
+        ->(state) { State.new(value: state[:value]) }, decider
       )
 
       assert_equal([:increased], decider.decide(:increase, {value: 0}))
@@ -42,7 +42,7 @@ class TestLmapOnState < Minitest::Test
       end
 
       decider = Decider.lmap_on_state(
-        decider, ->(state) { State.new(value: state[:value]) }
+        ->(state) { State.new(value: state[:value]) }, decider
       )
 
       assert_equal(State.new(value: 1), decider.evolve({value: 0}, :increased))
@@ -58,7 +58,7 @@ class TestLmapOnState < Minitest::Test
       end
 
       decider = Decider.lmap_on_state(
-        decider, ->(state) { State.new(value: state[:value]) }
+        ->(state) { State.new(value: state[:value]) }, decider
       )
 
       assert_equal(false, decider.terminal?({value: 0}))

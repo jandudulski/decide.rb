@@ -11,7 +11,7 @@ class TestLmapOnEvent < Minitest::Test
         initial_state 0
       end
 
-      decider = Decider.lmap_on_event(decider, ->(event) {})
+      decider = Decider.lmap_on_event(->(event) {}, decider)
 
       assert_equal(0, decider.initial_state)
     end
@@ -25,7 +25,7 @@ class TestLmapOnEvent < Minitest::Test
         end
       end
 
-      decider = Decider.lmap_on_event(decider, ->(event) {})
+      decider = Decider.lmap_on_event(->(event) {}, decider)
 
       refute decider.terminal?(0)
       assert decider.terminal?(1)
@@ -40,7 +40,7 @@ class TestLmapOnEvent < Minitest::Test
         end
       end
 
-      decider = Decider.lmap_on_event(decider, ->(event) {})
+      decider = Decider.lmap_on_event(->(event) {}, decider)
 
       assert_equal([:increased], decider.decide(:increase, 0))
     end
@@ -54,7 +54,7 @@ class TestLmapOnEvent < Minitest::Test
         end
       end
 
-      decider = Decider.lmap_on_event(decider, ->(event) { event.to_sym })
+      decider = Decider.lmap_on_event(->(event) { event.to_sym }, decider)
 
       assert_equal(1, decider.evolve(0, "increased"))
     end

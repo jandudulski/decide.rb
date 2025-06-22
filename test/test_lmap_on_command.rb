@@ -10,7 +10,7 @@ class TestLmapOnCommand < Minitest::Spec
       end
 
       decider = Decider.lmap_on_command(
-        decider, ->(command) {}
+        ->(command) {}, decider
       )
 
       assert_equal(0, decider.initial_state)
@@ -26,7 +26,7 @@ class TestLmapOnCommand < Minitest::Spec
       end
 
       decider = Decider.lmap_on_command(
-        decider, ->(command) {}
+        ->(command) {}, decider
       )
 
       refute decider.terminal?(0)
@@ -43,7 +43,7 @@ class TestLmapOnCommand < Minitest::Spec
       end
 
       decider = Decider.lmap_on_command(
-        decider, ->(command) { command.to_sym }
+        ->(command) { command.to_sym }, decider
       )
 
       assert_equal([:increased], decider.decide("increase", 0))
@@ -59,7 +59,7 @@ class TestLmapOnCommand < Minitest::Spec
       end
 
       decider = Decider.lmap_on_command(
-        decider, ->(command) {}
+        ->(command) {}, decider
       )
 
       assert_equal(1, decider.evolve(0, :increased))

@@ -1,3 +1,27 @@
+# 0.6.0
+
+* All extensions takes decider as last argument
+
+```ruby
+# Before
+Decider.dimap_on_state(decider, fl:, fr:)
+Decider.dimap_on_event(decider, fl:, fr:)
+Decider.lmap_on_event(decider, fn)
+Decider.lmap_on_command(decider, fn)
+Decider.lmap_on_state(decider, fn)
+Decider.rmap_on_event(decider, fn)
+Decider.rmap_on_state(decider, fn)
+
+# After
+Decider.dimap_on_state(fl, fr, decider)
+Decider.dimap_on_event(fl, fr, decider)
+Decider.lmap_on_event(fn, decider)
+Decider.lmap_on_command(fn, decider)
+Decider.lmap_on_state(fn, decider)
+Decider.rmap_on_event(fn, decider)
+Decider.rmap_on_state(fn, decider)
+```
+
 # 0.5.5
 
 * Add `lmap_on_command` extension that takes proc that maps command and returns a new decider

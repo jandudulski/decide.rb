@@ -109,11 +109,11 @@ module Decider
       end
 
       define_method(:lmap_on_command) do |fn|
-        Decider.lmap_on_command(self, fn)
+        Decider.lmap_on_command(fn, self)
       end
 
       define_method(:lmap_on_state) do |fn|
-        Decider.lmap_on_state(self, fn)
+        Decider.lmap_on_state(fn, self)
       end
 
       define_method(:map) do |fn|
@@ -121,23 +121,23 @@ module Decider
       end
 
       define_method(:rmap_on_state) do |fn|
-        Decider.rmap_on_state(self, fn)
+        Decider.rmap_on_state(fn, self)
       end
 
       define_method(:dimap_on_state) do |fl:, fr:|
-        Decider.dimap_on_state(self, fl: fl, fr: fr)
+        Decider.dimap_on_state(fl, fr, self)
       end
 
       define_method(:lmap_on_event) do |fn|
-        Decider.lmap_on_event(self, fn)
+        Decider.lmap_on_event(fn, self)
       end
 
       define_method(:rmap_on_event) do |fn|
-        Decider.rmap_on_event(self, fn)
+        Decider.rmap_on_event(fn, self)
       end
 
       define_method(:dimap_on_event) do |fl:, fr:|
-        Decider.dimap_on_event(self, fl: fl, fr: fr)
+        Decider.dimap_on_event(fl, fr, self)
       end
     end
   end
@@ -235,7 +235,7 @@ module Decider
     end
   end
 
-  def self.lmap_on_command(decider, fn)
+  def self.lmap_on_command(fn, decider)
     define do
       initial_state decider.initial_state
 
@@ -253,19 +253,19 @@ module Decider
     end
   end
 
-  def self.lmap_on_state(decider, fn)
-    dimap_on_state(decider, fl: fn, fr: ->(state) { state })
+  def self.lmap_on_state(fn, decider)
+    dimap_on_state(fn, ->(state) { state }, decider)
   end
 
   def self.map(fn, decider)
-    dimap_on_state(decider, fl: ->(state) { state }, fr: fn)
+    dimap_on_state(->(state) { state }, fn, decider)
   end
 
-  def self.rmap_on_state(decider, fn)
-    dimap_on_state(decider, fl: ->(state) { state }, fr: fn)
+  def self.rmap_on_state(fn, decider)
+    dimap_on_state(->(state) { state }, fn, decider)
   end
 
-  def self.dimap_on_state(decider, fl:, fr:)
+  def self.dimap_on_state(fl, fr, decider)
     define do
       initial_state fr.call(decider.initial_state)
 
@@ -283,15 +283,15 @@ module Decider
     end
   end
 
-  def self.lmap_on_event(decider, fn)
-    dimap_on_event(decider, fl: fn, fr: ->(event) { event })
+  def self.lmap_on_event(fn, decider)
+    dimap_on_event(fn, ->(event) { event }, decider)
   end
 
-  def self.rmap_on_event(decider, fn)
-    dimap_on_event(decider, fl: ->(event) { event }, fr: fn)
+  def self.rmap_on_event(fn, decider)
+    dimap_on_event(->(event) { event }, fn, decider)
   end
 
-  def self.dimap_on_event(decider, fl:, fr:)
+  def self.dimap_on_event(fl, fr, decider)
     define do
       initial_state decider.initial_state
 

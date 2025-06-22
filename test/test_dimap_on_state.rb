@@ -12,9 +12,9 @@ class TestDimapOnState < Minitest::Test
       end
 
       decider = Decider.dimap_on_state(
-        decider,
-        fl: ->(state) {},
-        fr: ->(state) { {value: state.value} }
+        ->(state) {},
+        ->(state) { {value: state.value} },
+        decider
       )
 
       assert_equal({value: 0}, decider.initial_state)
@@ -30,9 +30,9 @@ class TestDimapOnState < Minitest::Test
       end
 
       decider = Decider.dimap_on_state(
-        decider,
-        fl: ->(state) { State.new(value: state[:value]) },
-        fr: ->(state) { {value: state.value} }
+        ->(state) { State.new(value: state[:value]) },
+        ->(state) { {value: state.value} },
+        decider
       )
 
       assert_equal([:increased], decider.decide(:increase, {value: 0}))
@@ -48,9 +48,9 @@ class TestDimapOnState < Minitest::Test
       end
 
       decider = Decider.dimap_on_state(
-        decider,
-        fl: ->(state) { State.new(value: state[:value]) },
-        fr: ->(state) { {value: state.value} }
+        ->(state) { State.new(value: state[:value]) },
+        ->(state) { {value: state.value} },
+        decider
       )
 
       assert_equal({value: 1}, decider.evolve({value: 0}, :increased))
@@ -66,9 +66,9 @@ class TestDimapOnState < Minitest::Test
       end
 
       decider = Decider.dimap_on_state(
-        decider,
-        fl: ->(state) { State.new(value: state[:value]) },
-        fr: ->(state) {}
+        ->(state) { State.new(value: state[:value]) },
+        ->(state) {},
+        decider
       )
 
       assert_equal(false, decider.terminal?({value: 0}))

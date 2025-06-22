@@ -12,9 +12,9 @@ class TestDimapOnEvent < Minitest::Test
       end
 
       decider = Decider.dimap_on_event(
-        decider,
-        fl: ->(event) {},
-        fr: ->(event) {}
+        ->(event) {},
+        ->(event) {},
+        decider
       )
 
       assert_equal(0, decider.initial_state)
@@ -30,9 +30,9 @@ class TestDimapOnEvent < Minitest::Test
       end
 
       decider = Decider.dimap_on_event(
-        decider,
-        fl: ->(event) {},
-        fr: ->(event) {}
+        ->(event) {},
+        ->(event) {},
+        decider
       )
 
       refute decider.terminal?(0)
@@ -49,9 +49,9 @@ class TestDimapOnEvent < Minitest::Test
       end
 
       decider = Decider.dimap_on_event(
-        decider,
-        fl: ->(event) {},
-        fr: ->(event) { event.to_s }
+        ->(event) {},
+        ->(event) { event.to_s },
+        decider
       )
 
       assert_equal(["increased"], decider.decide(:increase, 0))
@@ -67,9 +67,9 @@ class TestDimapOnEvent < Minitest::Test
       end
 
       decider = Decider.dimap_on_event(
-        decider,
-        fl: ->(event) { event.to_sym },
-        fr: ->(event) {}
+        ->(event) { event.to_sym },
+        ->(event) {},
+        decider
       )
 
       assert_equal(1, decider.evolve(0, "increased"))

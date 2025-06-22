@@ -108,8 +108,16 @@ module Decider
         context.instance_exec(&terminal)
       end
 
+      define_method(:lmap_on_command) do |fn|
+        Decider.lmap_on_command(self, fn)
+      end
+
       define_method(:lmap_on_state) do |fn|
         Decider.lmap_on_state(self, fn)
+      end
+
+      define_method(:map) do |fn|
+        Decider.map(fn, self)
       end
 
       define_method(:rmap_on_state) do |fn|
@@ -227,8 +235,30 @@ module Decider
     end
   end
 
+  def self.lmap_on_command(decider, fn)
+    define do
+      initial_state decider.initial_state
+
+      decide proc { true } do
+        decider.decide(fn.call(command), state).each(&method(:emit))
+      end
+
+      evolve proc { true } do
+        decider.evolve(state, event)
+      end
+
+      terminal? do
+        decider.terminal?(state)
+      end
+    end
+  end
+
   def self.lmap_on_state(decider, fn)
     dimap_on_state(decider, fl: fn, fr: ->(state) { state })
+  end
+
+  def self.map(fn, decider)
+    dimap_on_state(decider, fl: ->(state) { state }, fr: fn)
   end
 
   def self.rmap_on_state(decider, fn)
@@ -277,6 +307,28 @@ module Decider
 
       terminal? do
         decider.terminal?(state)
+      end
+    end
+  end
+
+  def self.map2(fn, dx, dy)
+    define do
+      initial_state fn.call(dx.initial_state, dy.initial_state)
+
+      decide proc { true } do
+        dx.decide(command, state).each(&method(:emit))
+        dy.decide(command, state).each(&method(:emit))
+      end
+
+      evolve proc { true } do
+        fn.call(
+          dx.evolve(state, event),
+          dy.evolve(state, event)
+        )
+      end
+
+      terminal? do
+        dx.terminal?(state) && dy.terminal?(state)
       end
     end
   end

@@ -1,3 +1,74 @@
+# 0.5.5
+
+* Add `lmap_on_command` extension that takes proc that maps command and returns a new decider
+
+```ruby
+decider = Decider.define do
+  initial_state 0
+
+  decide :increase do
+    emit :increased
+  end
+end
+
+lmap = decider.lmap_on_command(->(command) { command.to_sym })
+lmap.decide("increase", 0)
+# => [:increased]
+```
+
+* Add `map` extension that works the same way as `rmap_on_state` but `Decider.map` takes function first
+
+```ruby
+# equivalent
+Decider.rmap_on_state(decider, fn)
+Decider.map(fn, decider)
+decider.rmap_on_state(fn)
+decider.map(fn)
+```
+
+* Add `map2` extension that takes function with two arguments and two deciders and returns a decider:
+
+```ruby
+dx = Decider.define do
+  initial_state({score: 0})
+
+  decide :score do
+    emit :scored
+  end
+
+  evolve :scored do
+    {score: state[:score] + 1}
+  end
+end
+
+dy = Decider.define do
+  initial_state({time: 0})
+
+  decide :tick do
+    emit :ticked
+  end
+
+  evolve :ticked do
+    {time: state[:time] + 1}
+  end
+end
+
+decider = Decider.map2(
+  ->(sx, sy) { {score: sx[:score], time: sy[:time]} }, dx, dy
+)
+
+decider.initial_state
+# => {score: 0, time: 0}
+decider.decide(:score, decider.initial_state)
+# => [:scored]
+decider.decide(:tick, decider.initial_state)
+# => [:ticked]
+decider.evolve(decider.initial_state, :scored)
+# => {score: 1, time: 0}
+decider.evolve(decider.initial_state, :ticked)
+# => {score: 0, time: 1}
+```
+
 # 0.5.4
 
 * Add `lmap_on_event` and `rmap_on_event` extensions that takes proc that maps event in or out and returns a new decider
@@ -7,7 +78,7 @@ decider = Decider.define do
   initial_state 0
 
   decide :increase do
-    :increased
+    emit :increased
   end
 
   evolve :increased do
@@ -84,7 +155,7 @@ inner = Decider.define do
   initial_state 0
 
   decide :increase do
-    :increased
+    emit :increased
   end
 
   evolve :increased do

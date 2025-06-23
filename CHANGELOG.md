@@ -1,3 +1,22 @@
+# 0.6.2
+
+* Add `many` extension that takes a decider and manage many instances
+
+```ruby
+deciders = Decider.many(decider)
+# or
+deciders = decider.many
+
+deciders.initial_state
+# => {}
+
+deciders.decide([id, command], state)
+# => [[id, event], [id, event]]
+
+deciders.evolve(state, [id, event])
+# => state
+```
+
 # 0.6.1
 
 * Add `apply` extension for creating applicatives

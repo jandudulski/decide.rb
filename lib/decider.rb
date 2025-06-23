@@ -140,6 +140,10 @@ module Decider
         Decider.dimap_on_event(fl, fr, self)
       end
 
+      define_method(:many) do
+        Decider.many(self)
+      end
+
       define_method(:apply) do |f|
         Decider.apply(self, f)
       end
@@ -311,6 +315,35 @@ module Decider
 
       terminal? do
         decider.terminal?(state)
+      end
+    end
+  end
+
+  def self.many(decider)
+    define do
+      initial_state({})
+
+      decide proc { [command, state] in [[_id, _], Hash] } do
+        command => [id, command]
+
+        ds = state.fetch(id) { decider.initial_state }
+
+        decider.decide(command, ds).each do |event|
+          emit [id, event]
+        end
+      end
+
+      evolve proc { [state, event] in [Hash, [_id, _]] } do
+        event => [id, event]
+
+        ds = state.fetch(id) { decider.initial_state }
+        ds = decider.evolve(ds, event)
+
+        state.merge(id => ds)
+      end
+
+      terminal? do
+        state.any? && state.all? { |_, ds| decider.terminal?(ds) }
       end
     end
   end

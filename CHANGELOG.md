@@ -1,3 +1,15 @@
+# 0.6.1
+
+* Add `apply` extension for creating applicatives
+
+```ruby
+decider = Decider.map(fn.curry, deciderx)
+decider = Decider.apply(decider, decidery) 
+decider = Decider.apply(decider, deciderz)
+# or
+deciderx.map(fn.curry).apply(decidery).apply(deciderz)
+```
+
 # 0.6.0
 
 * All extensions takes decider as last argument

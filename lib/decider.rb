@@ -139,6 +139,10 @@ module Decider
       define_method(:dimap_on_event) do |fl:, fr:|
         Decider.dimap_on_event(fl, fr, self)
       end
+
+      define_method(:apply) do |f|
+        Decider.apply(self, f)
+      end
     end
   end
 
@@ -309,6 +313,10 @@ module Decider
         decider.terminal?(state)
       end
     end
+  end
+
+  def self.apply(f, x)
+    map2(->(f, x) { f.call(x) }, f, x)
   end
 
   def self.map2(fn, dx, dy)

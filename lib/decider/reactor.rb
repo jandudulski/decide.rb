@@ -40,6 +40,10 @@ module Decider::Reactor
       define_method(:map_on_action) do |fn|
         Decider::Reactor.rmap_on_action(fn, self)
       end
+
+      define_method(:combine_with_decider) do |decider|
+        Decider::Reactor.combine_with_decider(self, decider)
+      end
     end
   end
 
@@ -103,5 +107,36 @@ module Decider::Reactor
 
   def self.map_on_action(fn, reactor)
     rmap_on_action(fn, reactor)
+  end
+
+  def self.combine_with_decider(reactor, decider)
+    Decider.define do
+      initial_state decider.initial_state
+
+      decide proc { true } do
+        fn = ->(commands, events, ds) {
+          case commands
+          in []
+            events
+          in [head, *tail]
+            new_events = decider.decide(head, ds)
+            new_commands = new_events.flat_map { |action_result| reactor.react(action_result) }
+            new_state = new_events.reduce(ds, &decider.evolve)
+
+            fn.call(tail + new_commands, events + new_events, new_state)
+          end
+        }
+
+        fn.call([command], [], state).each { |event| emit event }
+      end
+
+      evolve proc { true } do
+        decider.evolve(state, event)
+      end
+
+      terminal? do
+        decider.terminal?(state)
+      end
+    end
   end
 end

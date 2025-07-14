@@ -29,8 +29,33 @@ reactor.react(ActionResult.new(value: 1)
 # => #<data Action value=1>
 ```
 
-* Add `lmap_on_action_result` extension
-* Add `rmap_on_action` (aliased to `map_on_action`) extensions
+* Add `lmap_on_action_result` extension to reactor
+* Add `rmap_on_action` (aliased to `map_on_action`) extensions to reactor
+* Add `combine_with_decider` extension to reactor
+
+```ruby
+decider = Decider.define do
+  initial_state 0
+
+  decide :action do
+    emit :result
+  end
+
+  decide :another_action do
+    emit :another_result
+  end
+end
+
+reactor = Decider::Reactor.define do
+  react :result do
+    issue :another_action
+  end
+end
+
+decider = reactor.combine_with_decider(decider)
+decider.decide(:action)
+# => [:result, :another_result]
+```
 
 # 0.6.2
 

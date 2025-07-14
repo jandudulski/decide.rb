@@ -1,3 +1,37 @@
+# 0.7.0
+
+* Add reactor that can react to action results and issue actions
+
+```ruby
+ActionResult = Data.define(:value)
+Action = Data.define(:value)
+
+reactor = Reactor.define do
+  react :action_result do
+    issue :action
+    issue :another_action
+  end
+
+  react proc { action_result in ActionResult(value: 42) } do
+    issue Action.new(value: "the answer")
+  end
+
+  react ActionResult do
+    issue Action.new(value: action_result.value)
+  end
+end
+
+reactor.react(:action_result)
+# => [:action, :another_action]
+reactor.react(ActionResult.new(value: 42)
+# => #<data Action value="the answer">
+reactor.react(ActionResult.new(value: 1)
+# => #<data Action value=1>
+```
+
+* Add `lmap_on_action_result` extension
+* Add `rmap_on_action` (aliased to `map_on_action`) extensions
+
 # 0.6.2
 
 * Add `many` extension that takes a decider and manage many instances

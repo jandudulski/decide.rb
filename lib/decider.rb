@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "decider/reactor"
+
 module Decider
   StateAlreadyDefined = Class.new(StandardError)
   StateNotDefined = Class.new(StandardError)

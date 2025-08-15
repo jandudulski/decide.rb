@@ -51,8 +51,6 @@ module Decider
     class Builder
       DEFAULT = Object.new
 
-      attr_reader :module
-
       def initialize
         @reactions = {}
       end
@@ -62,11 +60,11 @@ module Decider
 
         reactor = Class.new
 
-        @module = Module.new(
+        mod = Module.new(
           reactions: reactions
         )
 
-        reactor.extend(@module)
+        reactor.extend(mod)
 
         reactor
       end

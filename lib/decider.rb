@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require "decider/reactor"
+require_relative "decider/reactor"
+require_relative "decider/view"
 
 module Decider
   StateAlreadyDefined = Class.new(StandardError)
@@ -155,8 +156,6 @@ module Decider
   class Builder
     DEFAULT = Object.new
 
-    attr_reader :module
-
     def initialize
       @initial_state = DEFAULT
       @deciders = {}
@@ -171,14 +170,14 @@ module Decider
 
       decider = Class.new
 
-      @module = Module.new(
+      mod = Module.new(
         initial_state: @initial_state,
         deciders: deciders,
         evolutions: evolutions,
         terminal: terminal
       )
 
-      decider.extend(@module)
+      decider.extend(mod)
 
       decider
     end

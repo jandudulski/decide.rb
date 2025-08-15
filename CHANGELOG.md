@@ -1,3 +1,23 @@
+# 0.8.0
+
+* Add view that can evolve from initial state
+
+```ruby
+view = Decider::View.define do
+  initial_state 0
+
+  evolve :increased do
+    state + 1
+  end
+
+  evolve :decreased do
+    state - 1
+  end
+end
+```
+
+* Add `lmap_on_event`, `dimap_on_state`, `lmap_on_state` and `rmap_on_state` extensions for view
+
 # 0.7.0
 
 * Add reactor that can react to action results and issue actions
@@ -6,7 +26,7 @@
 ActionResult = Data.define(:value)
 Action = Data.define(:value)
 
-reactor = Reactor.define do
+reactor = Decider::Reactor.define do
   react :action_result do
     issue :action
     issue :another_action
@@ -82,7 +102,7 @@ deciders.evolve(state, [id, event])
 
 ```ruby
 decider = Decider.map(fn.curry, deciderx)
-decider = Decider.apply(decider, decidery) 
+decider = Decider.apply(decider, decidery)
 decider = Decider.apply(decider, deciderz)
 # or
 deciderx.map(fn.curry).apply(decidery).apply(deciderz)

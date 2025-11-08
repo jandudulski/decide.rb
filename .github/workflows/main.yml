@@ -17,7 +17,7 @@ jobs:
       matrix:
         ruby:
           - "3.3.10"
-          - "3.4.7"
+          - "3.4.5"
 
     steps:
       - uses: actions/checkout@v4

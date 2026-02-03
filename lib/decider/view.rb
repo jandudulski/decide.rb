@@ -26,9 +26,12 @@ module Decider::View
             in [Proc => fn]
               context.instance_exec(&fn)
             in [etype]
-              context.event in ^etype
+              context_event = context.event
+              context_event in ^etype
             in [stype, etype]
-              [context.state, context.event] in [^stype, ^etype]
+              context_state = context.state
+              context_event = context.event
+              [context_state, context_event] in [^stype, ^etype]
             else
               false
             end

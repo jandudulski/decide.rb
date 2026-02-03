@@ -1,3 +1,7 @@
+# 0.8.1
+
+* Fix support for Ruby > 3.4.5
+
 # 0.8.0
 
 * Add view that can evolve from initial state

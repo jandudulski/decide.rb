@@ -7,13 +7,13 @@ Special credits for [Ismael Celis for inspiration](https://ismaelcelis.com/posts
 ## Installation
 
 ```bash
-gem install decide.rb
+gem install decider
 ```
 
 or add to Gemfile
 
 ```ruby
-gem "decide.rb"
+gem "decider"
 ```
 
 ## Usage

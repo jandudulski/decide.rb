@@ -1,3 +1,10 @@
+# 0.9.0
+
+* Rename gem to `decider`
+* Support `many` in `View`
+
+Big Thanks to [skalnik](https://github.com/skalnik/) for transfering the name ❤️
+
 # 0.8.1
 
 * Fix support for Ruby > 3.4.5

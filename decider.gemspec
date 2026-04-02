@@ -3,7 +3,7 @@
 require_relative "lib/decider/version"
 
 Gem::Specification.new do |spec|
-  github_uri = "https://github.com/jandudulski/decide.rb"
+  github_uri = "https://github.com/jandudulski/decider"
 
   spec.name = "decide.rb"
   spec.version = Decider::VERSION

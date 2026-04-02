@@ -1,0 +1,17 @@
+[env]
+_.path = ["bin"]
+
+[tools]
+ruby = "4.0.2"
+
+[tasks.test]
+run = "bundle exec rake"
+alias = "t"
+
+[tasks.console]
+run = "console"
+alias = "c"
+
+[tasks.release]
+run = "bundle exec rake release"
+alias = "r"

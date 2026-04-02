@@ -56,6 +56,10 @@ module Decider::View
       define_method(:dimap_on_state) do |fl:, fr:|
         Decider::View.dimap_on_state(fl, fr, self)
       end
+
+      define_method(:many) do
+        Decider::View.many(self)
+      end
     end
   end
 
@@ -129,6 +133,21 @@ module Decider::View
 
       evolve proc { true } do
         fr.call(view.evolve(fl.call(state), event))
+      end
+    end
+  end
+
+  def self.many(view)
+    define do
+      initial_state({})
+
+      evolve proc { [state, event] in [Hash, [_id, _]] } do
+        event => [id, event]
+
+        vs = state.fetch(id) { view.initial_state }
+        vs = view.evolve(vs, event)
+
+        state.merge(id => vs)
       end
     end
   end

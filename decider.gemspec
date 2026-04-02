@@ -5,7 +5,7 @@ require_relative "lib/decider/version"
 Gem::Specification.new do |spec|
   github_uri = "https://github.com/jandudulski/decider"
 
-  spec.name = "decide.rb"
+  spec.name = "decider"
   spec.version = Decider::VERSION
   spec.authors = ["Jan Dudulski"]
   spec.email = ["jan@dudulski.pl"]
